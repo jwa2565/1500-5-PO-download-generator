@@ -1,0 +1,409 @@
+import pandas as pd
+
+df = pd.read_excel("PO Download Spreadsheet.xlsx")
+
+# df.info()
+filePath = "testSawFile.SAW"
+
+
+def padAssWithSpaces(inString, n):  # n is how many characters the field needs to be
+    while len(inString) < n:
+        inString = inString + " "
+
+    return inString
+
+
+def padFrontWithZeros(inString, n):  # n is how many characters the field needs to be
+    while len(inString) < n:
+        inString = "0" + inString
+
+    return inString
+
+
+def determineColor(inColor):
+    if inColor == "White/White":
+        return "WHWH"
+
+    elif inColor == "Clay/Clay":
+        return "CLCL"
+
+    elif inColor == "Almond/Almond":
+        return "ALAL"
+
+    elif inColor == "Bronze/White":
+        return "BZWH"
+
+    elif inColor == "Bronze/Bronze":
+        return "BZBZ"
+
+    elif inColor == "Black/White":
+        return "BKWH"
+
+    elif inColor == "Black/Black":
+        return "BKBK"
+
+
+def detLength_Jambs(frameHeight):
+    return round((frameHeight + 0.25), 2)
+
+
+def detLength_HeadSill(frameWidth):
+    return round((frameWidth + 0.25), 2)
+
+
+def detLength_SashHorizontal(frameWidth):
+    sashLength = frameWidth - 2.563 + 0.25
+    return round(sashLength, 2)
+
+
+def detLength_SashVertical(frameHeight):
+    sashLength = (frameHeight / 2.0) - 1.0 + 0.25
+    return round(sashLength, 2)
+
+
+def detProfileID_Jamb(wType, profile, nailfin, jLeg, flangeAddOn, channelFiller):
+    profileID = ""
+
+    if profile == "Bevel":
+        profileID = profileID + "BV"
+    elif profile == "Brickmould":
+        profileID = profileID + "BM"
+
+    if wType == "Slider":
+        profileID = profileID + "S"
+    elif wType == "Single Hung":
+        profileID = profileID + "H"
+
+    profileID = profileID + "L"  # L for jambs
+
+    if nailfin == "Yes":
+        profileID = profileID + "F"
+    elif nailfin == "No":
+        profileID = profileID + "N"
+
+    if jLeg == "Yes":
+        profileID = profileID + "J"
+    elif jLeg == "No":
+        profileID = profileID + "N"
+
+    if flangeAddOn == "Yes":
+        profileID = profileID + "S"
+    elif flangeAddOn == "No":
+        profileID = profileID + "N"
+
+    if channelFiller == "Yes":
+        profileID = profileID + "C"
+    elif channelFiller == "No":
+        profileID = profileID + "N"
+
+    return profileID
+
+
+def detProfileID_HeadSill(wType, profile, nailfin, jLeg, flangeAddOn, channelFiller):
+    profileID = ""
+
+    if profile == "Bevel":
+        profileID = profileID + "BV"
+    elif profile == "Brickmould":
+        profileID = profileID + "BM"
+
+    if wType == "Slider":
+        profileID = profileID + "S"
+    elif wType == "Single Hung":
+        profileID = profileID + "H"
+
+    profileID = profileID + "C"  # C for head/sill
+
+    if nailfin == "Yes":
+        profileID = profileID + "F"
+    elif nailfin == "No":
+        profileID = profileID + "N"
+
+    if jLeg == "Yes":
+        profileID = profileID + "J"
+    elif jLeg == "No":
+        profileID = profileID + "N"
+
+    if flangeAddOn == "Yes":
+        profileID = profileID + "S"
+    elif flangeAddOn == "No":
+        profileID = profileID + "N"
+
+    if channelFiller == "Yes":
+        profileID = profileID + "C"
+    elif channelFiller == "No":
+        profileID = profileID + "N"
+
+    return profileID
+
+
+def detProfileID_SashHorizontal(wType):
+    profileID = ""
+
+    if wType == "Slider":
+        profileID = profileID + "SS"
+        profileID = profileID + "H"
+        profileID = profileID + "4"
+
+    elif wType == "Single Hung":
+        profileID = profileID + "SH"
+        profileID = profileID + "R"
+        profileID = profileID + "4"
+
+    return profileID
+
+
+def detProfileID_SashVertical(wType, config):
+    profileID = ""
+
+    if wType == "Slider":
+        profileID = profileID + "SS"
+        profileID = profileID + "V"
+
+        if config == "OX":
+            profileID = profileID + "O"
+        else:  # making XO the default
+            profileID = profileID + "X"
+
+        profileID = profileID + "4"
+
+    elif wType == "Single Hung":
+        profileID = profileID + "SH"
+        profileID = profileID + "S"
+        profileID = profileID + "4"
+
+    return profileID
+
+
+def generateWelderCode_Frame(profile, wType, nailfin, jLeg, flangeAddOn, channelFiller):
+    welderCode = ""
+
+    if profile == "Beveled":
+        welderCode = welderCode + "V"
+    elif profile == "Brickmould":
+        welderCode = welderCode + "M"
+
+    if wType == "Slider":
+        welderCode = welderCode + "S"
+    elif wType == "Single Hung":
+        welderCode = welderCode + "H"
+
+    if nailfin == "Yes":
+        welderCode = welderCode + "F"
+    elif nailfin == "No":
+        welderCode = welderCode + "N"
+
+    if jLeg == "Yes":
+        welderCode = welderCode + "J"
+    elif jLeg == "No":
+        welderCode = welderCode + "N"
+
+    if flangeAddOn == "Yes" and channelFiller == "No":
+        welderCode = welderCode + "S"
+    elif flangeAddOn == "No" and channelFiller == "Yes":
+        welderCode = welderCode + "J"
+    elif flangeAddOn == "Yes" and channelFiller == "Yes":
+        welderCode = welderCode + "B"
+    elif flangeAddOn == "No" and channelFiller == "No":
+        welderCode = welderCode + "N"
+
+    return welderCode
+
+
+def generateWelderCode_Sash(wType, impact):
+    welderCode = ""
+
+    if wType == "Slider":
+        welderCode = welderCode + "SSSTD"
+
+    elif wType == "Single Hung":
+        if impact == "Yes":
+            welderCode = welderCode + "SHIMP"
+        else:  # assuming default to be non-imact
+            welderCode = welderCode + "SHSTD"
+
+    return welderCode
+
+
+def generateLine(orderNum, profileID, color, binNum, qty, comment, length):
+    lineString = ""
+
+    lineString = lineString + "K" + orderNum
+    lineString = lineString + "P" + profileID
+    lineString = lineString + "T" + color
+    lineString = lineString + "N" + binNum
+    lineString = lineString + "A" + qty
+    lineString = lineString + "C" + comment
+    lineString = lineString + "L" + length
+
+    return lineString
+
+
+def generateFrameLabelData(i,welderCode,frameHeight,frameWidth,orderNum,customer,
+    destination,date,color,binNum,):
+    lineString = ""
+    lineString = lineString + "LabId;" + str(i + 1) + ";\n"
+    lineString = lineString + "FE=Sturtz1;\n"
+
+    frameHeight_string = str(round(frameHeight, 2)).replace(".", "")
+    frameHeight_string = padFrontWithZeros(frameHeight_string, 5)
+    frameWidth_string = str(round(frameWidth, 2)).replace(".", "")
+    frameWidth_string = padFrontWithZeros(frameWidth_string, 5)
+    lineString = lineString + "BA1=" + welderCode + frameHeight_string + frameWidth_string + ";\n"
+
+    lineString = lineString + "BA2=" + orderNum + ";\n"
+
+    meetingRailLocation = frameHeight - (frameHeight / 2.0) - 0.231 - 0.125
+    lineString = lineString + "BA3=" + str(round(meetingRailLocation, 3)) + ";\n"
+
+    lineString = lineString + "S1=" + orderNum + ";\n"
+    lineString = lineString + "S2=" + customer + ";\n"
+    lineString = lineString + "S3=" + "###" + ";\n"
+    lineString = lineString + "S4=" + str(date) + ";\n"
+    lineString = lineString + "S5=" + "###" + ";\n"
+    lineString = lineString + "S6=" + destination + ";\n"
+    lineString = lineString + "S7=" + "###" + ";\n"
+    lineString = lineString + "S8=" + str(round(frameWidth, 3)) + "x" + str(round(frameHeight, 3)) + ";\n"
+    lineString = lineString + "S9=" + color + ";\n"
+    lineString = lineString + "S10=" + "###" + ";\n"
+    lineString = lineString + "S11=" + "###" + ";\n"
+    lineString = lineString + "S12=" + "###" + ";\n"
+    lineString = lineString + "S13=" + "###" + ";\n"
+    lineString = lineString + "S14=" + "###" + ";\n"
+    lineString = lineString + "S15=" + "###" + ";\n"
+    lineString = lineString + "S16=" + "###" + ";\n"
+    lineString = lineString + "S17=" + str(detLength_Jambs(frameHeight)) + ";\n"
+    lineString = lineString + "S18=" + str(detLength_HeadSill(frameWidth)) + ";\n"
+    lineString = lineString + "S19=" + "###" + ";\n"
+    lineString = lineString + "S20=" + "###" + ";\n"
+    lineString = lineString + "S21=" + "###" + ";\n"
+    lineString = lineString + "S22=" + "###" + ";\n"
+    lineString = lineString + "S23=" + "###" + ";\n"
+    lineString = lineString + "S24=" + "###" + ";\n"
+    lineString = lineString + "S25=" + "###" + ";\n"
+    lineString = lineString + "S26=" + "###" + ";\n"
+    lineString = lineString + "S27=" + "###" + ";\n"
+    lineString = lineString + "S28=" + "###" + ";\n"
+    lineString = lineString + "S29=" + "###" + ";\n"
+    lineString = lineString + "S30=" + "###" + ";\n"
+    lineString = lineString + "S31=" + "###" + ";\n"
+    lineString = lineString + "S32=" + "###" + ";\n"
+    lineString = lineString + "S33=" + "###" + ";\n"
+    lineString = lineString + "S34=" + "###" + ";\n"
+    lineString = lineString + "S35=" + "###" + ";\n"
+    lineString = lineString + "S36=" + "###" + ";\n"
+    lineString = lineString + "S37=" + "###" + ";\n"
+    lineString = lineString + "S38=" + "###" + ";\n"
+    lineString = lineString + "S39=" + "###" + ";\n"
+    lineString = lineString + "S40=" + "###" + ";\n"
+    lineString = lineString + "S41=" + "###" + ";\n"
+    lineString = lineString + "S42=" + "###" + ";\n"
+    lineString = lineString + "S43=" + "###" + ";\n"
+    lineString = lineString + "S44=" + "###" + ";\n"
+    lineString = lineString + "S45=" + binNum + ";\n"
+    lineString = lineString + "S46=" + "###" + ";\n"
+    lineString = lineString + "\n\n"
+
+    return lineString
+
+
+file_Jamb = open("JambFrameSaw.SAW", "w")
+file_HeadSill = open("HeadSillFrameSaw.SAW", "w")
+file_HorizontalSash = open("LockLiftRailSashSaw.SAW", "w")
+file_VerticalSash = open("StileSashSaw.SAW", "w")
+
+file_JambLabel = open("JambFrameSaw.la1", "w")
+file_HeadSillLabel = open("HeadSillFrameSaw.la1", "w")
+file_HorizontalSashLabel = open("LockLiftRailSashSaw.la1", "w")
+file_VerticalSashLabel = open("StileSashSaw.la1", "w")
+
+for i, rows in df.iterrows():
+
+    orderNum = df.iloc[i]["Order Number"]
+    binNum = "Z00Z"  # Using a nonsense value for now
+    qty = "001"
+    comment = orderNum
+
+    color = determineColor(df.iloc[i]["Color"])
+    length_jamb = detLength_Jambs(df.iloc[i]["Frame Height"])
+    length_headSill = detLength_HeadSill(df.iloc[i]["Frame Width"])
+    length_sashHorizontal = detLength_SashHorizontal(df.iloc[i]["Frame Width"])
+    length_sashVertical = detLength_SashVertical(df.iloc[i]["Frame Height"])
+    profileID_sashHorizontal = detProfileID_SashHorizontal(df.iloc[i]["Window Type"])
+    profileID_sashVertical = detProfileID_SashVertical(
+        df.iloc[i]["Window Type"], df.iloc[i]["Configuration (for sliders)"]
+    )
+    profileID_Jamb = detProfileID_Jamb(
+        df.iloc[i]["Window Type"],
+        df.iloc[i]["Frame Profile"],
+        df.iloc[i]["Nailfin?"],
+        df.iloc[i]["J-leg?"],
+        df.iloc[i]["Flange add-on?"],
+        df.iloc[i]["Channel Filler?"]
+    )
+    profileID_HeadSill = detProfileID_HeadSill(
+        df.iloc[i]["Window Type"],
+        df.iloc[i]["Frame Profile"],
+        df.iloc[i]["Nailfin?"],
+        df.iloc[i]["J-leg?"],
+        df.iloc[i]["Flange add-on?"],
+        df.iloc[i]["Channel Filler?"]
+    )
+    welderCode_frame = generateWelderCode_Frame(
+        df.iloc[i]["Frame Profile"],
+        df.iloc[i]["Window Type"],
+        df.iloc[i]["Nailfin?"],
+        df.iloc[i]["J-leg?"],
+        df.iloc[i]["Flange add-on?"],
+        df.iloc[i]["Channel Filler?"]
+    )
+    welderCode_sash = generateWelderCode_Sash(
+        df.iloc[i]["Window Type"], df.iloc[i]["Impact?"]
+    )
+
+    # pad values to correct character count for the field
+    orderNum = padAssWithSpaces(orderNum, 10)
+    comment = padAssWithSpaces(comment, 10)
+    profileID_sashHorizontal = padAssWithSpaces(profileID_sashHorizontal, 10)
+    profileID_sashVertical = padAssWithSpaces(profileID_sashVertical, 10)
+    profileID_Jamb = padAssWithSpaces(profileID_Jamb, 10)
+    profileID_HeadSill = padAssWithSpaces(profileID_HeadSill, 10)
+    length_jamb_string = str(length_jamb).replace(
+        ".", ""
+    )  # turn to string, remove decimal
+    length_jamb_string = padFrontWithZeros(
+        length_jamb_string, 5
+    )  # make it 5 characters
+    length_headSill_string = str(length_headSill).replace(".", "")
+    length_headSill_string = padFrontWithZeros(length_headSill_string, 5)
+    length_sashHorizontal_string = str(length_sashHorizontal).replace(".", "")
+    length_sashHorizontal_string = padFrontWithZeros(length_sashHorizontal_string, 5)
+    length_sashVertical_string = str(length_sashVertical).replace(".", "")
+    length_sashVertical_string = padFrontWithZeros(length_sashVertical_string, 5)
+
+    # write the lines to the .SAW files
+    file_Jamb.write( generateLine(orderNum, profileID_Jamb, color, binNum, qty, comment, length_jamb_string) )
+    file_HeadSill.write( generateLine(orderNum, profileID_HeadSill, color, binNum, qty, comment, length_headSill_string) )
+    file_HorizontalSash.write( generateLine(orderNum, profileID_sashHorizontal, color, binNum, qty, comment, length_sashHorizontal_string) )
+    file_VerticalSash.write( generateLine(orderNum, profileID_sashVertical, color, binNum, qty, comment, length_sashVertical_string) )
+
+    # insert code to write macro stuff into the .SAW files
+
+    # insert code to write data into the .la1 files
+    file_JambLabel.write( generateFrameLabelData(i, welderCode_frame, df.iloc[i]["Frame Height"], df.iloc[i]["Frame Width"],
+            orderNum, df.iloc[i]["Customer"], df.iloc[i]["Destination"], df.iloc[i]["Schedule Date"], color, binNum) )
+    file_HeadSillLabel.write( generateFrameLabelData(i, welderCode_frame, df.iloc[i]["Frame Height"], df.iloc[i]["Frame Width"],
+            orderNum, df.iloc[i]["Customer"], df.iloc[i]["Destination"], df.iloc[i]["Schedule Date"], color, binNum) )
+    # file_HorizontalSashLabel.write()
+    # file_VerticalSashLabel.write()
+
+
+file_Jamb.close()
+file_HeadSill.close()
+file_HorizontalSash.close()
+file_VerticalSash.close()
+
+file_JambLabel.close()
+file_HeadSillLabel.close()
+file_HorizontalSashLabel.close()
+file_VerticalSashLabel.close()
