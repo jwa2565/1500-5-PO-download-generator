@@ -17,6 +17,7 @@
 print("Starting 1500-5 PO Download Generator!")
 print("Importing data...")
 
+import re
 import time
 from datetime import date
 today = str(date.today())
@@ -607,6 +608,7 @@ def detNumOfCoils(balance):
 def addMacro_tapconJamb():
     hi = "Hi"
     ## too lazy to reverse engineer the tapcon logic lol
+    return hi
 
 def addFabMacros_Jamb(balanceType, childSafetyLatch, cutLength, sashHeight, nailfin, flangeAddOn, balance):
     
